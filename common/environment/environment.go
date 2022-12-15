@@ -10,24 +10,27 @@ import (
 )
 
 type ServerValues struct {
-	Protocol        string
-	Host            string
-	Port            int
-	ShutdownTimeout time.Duration
-	Context         string
-	TimeZone        string
-	RedisHost       string
-	RedisPass       string
-	RedisPort       int
-	RedisDb         int
-	DbUser          string
-	DbPass          string
-	DbHost          string
-	DbPort          string
-	DbName          string
-	DbTimeout       time.Duration
-	DbTimeZone      string
-	EngineSql       string
+	Protocol             string
+	Host                 string
+	Port                 int
+	ShutdownTimeout      time.Duration
+	Context              string
+	TimeZone             string
+	RedisHost            string
+	RedisPass            string
+	RedisPort            int
+	RedisDb              int
+	RedisDb2             int
+	DbUser               string
+	DbPass               string
+	DbHost               string
+	DbPort               string
+	DbName               string
+	DbTimeout            time.Duration
+	DbTimeZone           string
+	EngineSql            string
+	TokenLifeTime        int
+	RefreshTokenLifeTime int
 }
 
 func env() {
@@ -68,6 +71,7 @@ func Server() ServerValues {
 	redisHost := getEnv("REDIS_HOST", "")
 	redisPass := getEnv("REDIS_PASS", "")
 	redisDb := getEnvInt("REDIS_DB", 0)
+	redisDb2 := getEnvInt("REDIS_DB_SECONDARY", 1)
 	redisPort := getEnvInt("REDIS_DB", 0)
 	dbHost := getEnv("DB_HOST", "db-postgresql")
 	dbUser := getEnv("DB_USER", "postgres")
@@ -76,6 +80,8 @@ func Server() ServerValues {
 	dbName := getEnv("DB_NAME", "authdb")
 	dbTimeZone := getEnv("DB_TIME_ZONE", "America/Santiago")
 	engineSql := getEnv("DB_DRIVER", "postgres")
+	tokenLifeTime := getEnvInt("TOKEN_LIFE_TIME", 15)
+	refreshTokenLifeTime := getEnvInt("REFRESH_TOKEN_LIFE_TIME", 30)
 
 	if err != nil {
 		redisDb = 0
@@ -90,7 +96,7 @@ func Server() ServerValues {
 	}
 
 	if context == "" {
-		context = "api"
+		context = "auth"
 	}
 
 	if timeZone == "" {
@@ -108,22 +114,25 @@ func Server() ServerValues {
 	log.Println(fmt.Printf("Redis host: %s, Redis pass: %s, Redis db: %s", redisHost, redisPass, redisDb))
 
 	return ServerValues{
-		Protocol:        protocol,
-		Host:            host,
-		Context:         context,
-		Port:            port,
-		TimeZone:        timeZone,
-		ShutdownTimeout: 10 * time.Second,
-		RedisHost:       redisHost,
-		RedisPass:       redisPass,
-		RedisDb:         redisDb,
-		RedisPort:       redisPort,
-		DbHost:          dbHost,
-		DbPort:          dbPort,
-		DbUser:          dbUser,
-		DbPass:          dbPass,
-		DbName:          dbName,
-		DbTimeZone:      dbTimeZone,
-		EngineSql:       engineSql,
+		Protocol:             protocol,
+		Host:                 host,
+		Context:              context,
+		Port:                 port,
+		TimeZone:             timeZone,
+		ShutdownTimeout:      10 * time.Second,
+		RedisHost:            redisHost,
+		RedisPass:            redisPass,
+		RedisDb:              redisDb,
+		RedisDb2:             redisDb2,
+		RedisPort:            redisPort,
+		DbHost:               dbHost,
+		DbPort:               dbPort,
+		DbUser:               dbUser,
+		DbPass:               dbPass,
+		DbName:               dbName,
+		DbTimeZone:           dbTimeZone,
+		EngineSql:            engineSql,
+		TokenLifeTime:        tokenLifeTime,
+		RefreshTokenLifeTime: refreshTokenLifeTime,
 	}
 }

@@ -16,16 +16,18 @@ type RedisService struct {
 
 // Top level declarations for the storeService and Redis context
 var (
-	storeService = &RedisService{}
-	ctx          = context.Background()
+	storeService1 = &RedisService{}
+	storeService2 = &RedisService{}
+	ctx           = context.Background()
 )
 
 var params = environment.Server()
 
-const CacheDuration = 1 * time.Hour
+const PrimaryCacheDuration = 15 * time.Minute
+const SecondaryCacheDuration = 60 * time.Hour
 
 // InitializeStore is initializing the store service and return a store pointer
-func InitializeStore() *RedisService {
+func InitializeStore() (*RedisService, *RedisService) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     params.RedisHost,
 		Password: params.RedisPass, // no password set
@@ -37,32 +39,73 @@ func InitializeStore() *RedisService {
 		log.Println(fmt.Sprintf("Error init Redis: %v", err))
 	}
 
-	log.Println(fmt.Sprintf("Redis started successfully: pong message = {%s}", pong))
-	storeService.redisClient = rdb
-	return storeService
-}
+	rdb2 := redis.NewClient(&redis.Options{
+		Addr:     params.RedisHost,
+		Password: params.RedisPass, // no password set
+		DB:       params.RedisDb2,  // use default DB
+	})
 
-func SaveURLInRedis(shortURL, originalURL string) {
-	err := storeService.redisClient.Set(ctx, shortURL, originalURL, CacheDuration).Err()
-	if err != nil {
-		log.Println(fmt.Sprintf("Failed SaveURLInRedis | Error: %v - shortURL: %s - originalURL: %s\n",
-			err, shortURL, originalURL))
+	_, err2 := rdb2.Ping(ctx).Result()
+	if err2 != nil {
+		log.Println(fmt.Sprintf("Error init Redis: %v", err))
 	}
+
+	log.Println(fmt.Sprintf("Redis started successfully: pong message = {%s}", pong))
+
+	storeService1.redisClient = rdb
+	storeService2.redisClient = rdb2
+
+	return storeService1, storeService2
 }
 
-func RetrieveInitialURLFromRedis(shortURL string) string {
-	result, err := storeService.redisClient.Get(ctx, shortURL).Result()
+func GetToken(token string) string {
+	result, err := storeService1.redisClient.Get(ctx, token).Result()
 	if err != nil {
-		log.Println(fmt.Sprintf("Failed RetrieveInitialURLFromRedis | Error: %v - shortURL: %s\n",
-			err, shortURL))
+		log.Println(fmt.Sprintf("Failed getting token | Error: %v - token: %s\n",
+			err, token))
+		return ""
 	}
 	return result
 }
 
-func SaveTokenInRedis(token, username string) {
-	err := storeService.redisClient.Set(ctx, token, username, CacheDuration).Err()
+func SaveToken(token, username string) {
+	err := storeService1.redisClient.Set(ctx, token, username, PrimaryCacheDuration).Err()
 	if err != nil {
-		log.Println(fmt.Sprintf("Failed SaveTokenInRedis | Error: %v - token: %s - username: %s\n",
+		log.Println(fmt.Sprintf("Failed SaveToken | Error: %v - token: %s - username: %s\n",
 			err, token, username))
+	}
+}
+
+func DeleteToken(token string) {
+	err := storeService1.redisClient.Del(ctx, token).Err()
+	if err != nil {
+		log.Println(fmt.Sprintf("Failed deleting token | Error: %v - token: %s\n",
+			err, token))
+	}
+}
+
+func SaveRefreshToken(refreshToken, username string) {
+	err := storeService2.redisClient.Set(ctx, refreshToken, username, SecondaryCacheDuration).Err()
+	if err != nil {
+		log.Println(fmt.Sprintf("Failed SaveRefreshToken | Error: %v - token: %s - username: %s\n",
+			err, refreshToken, username))
+	}
+}
+
+func GetRefreshToken(refreshToken string) string {
+	result, err := storeService2.redisClient.Get(ctx, refreshToken).Result()
+	if err != nil {
+		log.Println(fmt.Sprintf("Failed getting token | Error: %v - token: %s\n",
+			err, refreshToken))
+		return ""
+	}
+	return result
+}
+
+func DeleteRefreshToken(refreshToken string) {
+	err := storeService2.redisClient.Del(ctx, refreshToken).Err()
+	if err != nil {
+		log.Println(fmt.Sprintf("Failed deleting token | Error: %v - token: %s\n",
+			err, refreshToken))
 	}
 }

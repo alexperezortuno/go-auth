@@ -52,3 +52,51 @@ func CreateUserHandler() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, response)
 	}
 }
+
+func ValidateTokenHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var header = ctx.GetHeader("Authorization")
+
+		if header == "" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"status":  false,
+				"message": "credentials is required",
+			})
+			return
+		}
+
+		response, err := auth.ValidateToken(header)
+		if err != "" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"status":  false,
+				"message": response.Message,
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, response)
+	}
+}
+
+func RefreshTokenHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var req auth.TokenRequest
+
+		if err := ctx.BindJSON(&req); err != nil {
+			log.Printf("[ERROR] %s", err.Error())
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
+
+		response, err := auth.RefreshToken(req.Token)
+		if err != "" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"status":  false,
+				"message": err,
+			})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, response)
+	}
+}

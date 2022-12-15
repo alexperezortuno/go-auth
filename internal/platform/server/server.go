@@ -67,6 +67,8 @@ func (s *Server) registerRoutes(context string) {
 	s.engine.GET(fmt.Sprintf("/%s/%s", context, "/health"), health.CheckHandler())
 	s.engine.POST(fmt.Sprintf("/%s/%s", context, "/login"), auth.LoginHandler())
 	s.engine.POST(fmt.Sprintf("/%s/%s", context, "/create"), auth.CreateUserHandler())
+	s.engine.POST(fmt.Sprintf("/%s/%s", context, "/verify"), auth.ValidateTokenHandler())
+	s.engine.POST(fmt.Sprintf("/%s/%s", context, "/refresh"), auth.RefreshTokenHandler())
 }
 
 func serverContext(ctx context.Context) context.Context {
