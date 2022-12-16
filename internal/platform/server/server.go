@@ -6,10 +6,13 @@ import (
 	"github.com/alexperezortuno/go-auth/common/environment"
 	"github.com/alexperezortuno/go-auth/internal/platform/server/handler/auth"
 	"github.com/alexperezortuno/go-auth/internal/platform/server/handler/health"
+	"github.com/alexperezortuno/go-auth/internal/platform/server/middleware/authorization"
 	"github.com/alexperezortuno/go-auth/internal/platform/server/middleware/logging"
 	"github.com/alexperezortuno/go-auth/internal/platform/server/middleware/recovery"
 	"github.com/alexperezortuno/go-auth/internal/platform/storage/data_base"
 	"github.com/alexperezortuno/go-auth/internal/platform/storage/redis"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -63,12 +66,32 @@ func (s *Server) Run(ctx context.Context, params environment.ServerValues) error
 
 func (s *Server) registerRoutes(context string) {
 	s.engine.Use(logging.Middleware(), gin.Logger(), recovery.Middleware())
+	s.engine.Use(gzip.Gzip(gzip.DefaultCompression))
+	s.engine.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
-	s.engine.GET(fmt.Sprintf("/%s/%s", context, "/health"), health.CheckHandler())
-	s.engine.POST(fmt.Sprintf("/%s/%s", context, "/login"), auth.LoginHandler())
-	s.engine.POST(fmt.Sprintf("/%s/%s", context, "/create"), auth.CreateUserHandler())
-	s.engine.POST(fmt.Sprintf("/%s/%s", context, "/verify"), auth.ValidateTokenHandler())
-	s.engine.POST(fmt.Sprintf("/%s/%s", context, "/refresh"), auth.RefreshTokenHandler())
+	unauthorized := s.engine.Group("/")
+	authorized := s.engine.Group("/")
+
+	unauthorized.Use()
+	{
+		unauthorized.GET(fmt.Sprintf("%s/%s", context, "/health"), health.CheckHandler())
+		unauthorized.POST(fmt.Sprintf("%s/%s", context, "/login"), auth.LoginHandler())
+		unauthorized.POST(fmt.Sprintf("%s/%s", context, "/refresh"), auth.RefreshTokenHandler())
+	}
+
+	authorized.Use(authorization.Middleware())
+	{
+		authorized.GET(fmt.Sprintf("%s/%s", context, "/info"), auth.GetUserHandler())
+		authorized.POST(fmt.Sprintf("%s/%s", context, "/create"), auth.CreateUserHandler())
+		authorized.POST(fmt.Sprintf("/%s/%s", context, "/verify"), auth.ValidateTokenHandler())
+	}
 }
 
 func serverContext(ctx context.Context) context.Context {

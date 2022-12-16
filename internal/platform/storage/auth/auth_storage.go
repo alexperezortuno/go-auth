@@ -41,6 +41,10 @@ type UserRequest struct {
 	IdCard   string `json:"id_card"`
 }
 
+type UserNameRequest struct {
+	UserName string `json:"username"`
+}
+
 type TokenRequest struct {
 	Token string `json:"token"`
 }
@@ -125,6 +129,18 @@ func CreateUser(ar UserRequest) (model.User, string) {
 	}
 
 	return user, ""
+}
+
+func GetUser(ar UserNameRequest) (*model.User, string) {
+	user := model.User{}
+	resp, err := user.FindUserByEmail(data_base.Connection, ar.UserName)
+
+	if err != nil {
+		log.Printf("[ERROR] %s", err.Error())
+		return &user, err.Error()
+	}
+
+	return resp, ""
 }
 
 func ValidateToken(tr string) (ValidationResponse, string) {

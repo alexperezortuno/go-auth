@@ -25,16 +25,6 @@ type User struct {
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
-type UserResponse struct {
-	ID       uint32 `json:"id" copier:"must"`
-	FullName string `json:"full_name"`
-	Name     string `json:"name"`
-	LastName string `json:"last_name"`
-	Nickname string `json:"nickname"`
-	IdCard   string `json:"id_card"`
-	Email    string `json:"email" copier:"must"`
-}
-
 func UnmarshalUser(data []byte) (User, error) {
 	var r User
 	err := json.Unmarshal(data, &r)
@@ -89,10 +79,10 @@ func (u *User) Validate(action string) error {
 			return errors.New("Required Password")
 		}
 		if u.Email == "" {
-			return errors.New("Required Email")
+			return errors.New("Required UserName")
 		}
 		if err := checkmail.ValidateFormat(u.Email); err != nil {
-			return errors.New("Invalid Email")
+			return errors.New("Invalid UserName")
 		}
 
 		return nil
@@ -101,10 +91,10 @@ func (u *User) Validate(action string) error {
 			return errors.New("Required Password")
 		}
 		if u.Email == "" {
-			return errors.New("Required Email")
+			return errors.New("Required UserName")
 		}
 		if err := checkmail.ValidateFormat(u.Email); err != nil {
-			return errors.New("Invalid Email")
+			return errors.New("Invalid UserName")
 		}
 		return nil
 

@@ -1,30 +1,38 @@
 package common
 
 import (
-	"encoding/json"
-	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func JSON(w http.ResponseWriter, statusCode int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-
-	err := json.NewEncoder(w).Encode(data)
-
-	if err != nil {
-		fmt.Fprintf(w, "%s", err.Error())
-	}
+func ErrorResponse(err string) gin.H {
+	return gin.H{"message": err, "status": false}
 }
 
-func ERROR(w http.ResponseWriter, statusCode int, err error) {
-	if err != nil {
-		JSON(w, statusCode, struct {
-			Error string `json:"error"`
-		}{
-			Error: err.Error(),
-		})
-		return
-	}
-	JSON(w, http.StatusBadRequest, nil)
+func SuccessResponse(ctx *gin.Context, data interface{}) {
+	ctx.JSON(http.StatusOK, gin.H{"result": data, "status": true, "message": "success"})
+}
+
+func SuccessResponseWithMessage(ctx *gin.Context, data interface{}, message string) {
+	ctx.JSON(http.StatusOK, gin.H{"result": data, "status": true, "message": message})
+}
+
+func BadRequest(ctx *gin.Context, err string) {
+	ctx.JSON(http.StatusBadRequest, gin.H{"message": err, "status": false})
+}
+
+func Unauthorized(ctx *gin.Context, err string) {
+	ctx.JSON(http.StatusUnauthorized, gin.H{"message": err, "status": false})
+}
+
+func Forbidden(ctx *gin.Context, err string) {
+	ctx.JSON(http.StatusForbidden, gin.H{"message": err, "status": false})
+}
+
+func NotFound(ctx *gin.Context, err string) {
+	ctx.JSON(http.StatusNotFound, gin.H{"message": err, "status": false})
+}
+
+func InternalServerError(ctx *gin.Context, err string) {
+	ctx.JSON(http.StatusInternalServerError, gin.H{"message": err, "status": false})
 }

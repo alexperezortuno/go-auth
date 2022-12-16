@@ -3,10 +3,10 @@ package redis
 import (
 	"context"
 	"fmt"
+	"github.com/alexperezortuno/go-auth/common"
 	"github.com/alexperezortuno/go-auth/common/environment"
 	"github.com/go-redis/redis/v9"
 	"log"
-	"time"
 )
 
 // RedisService is struct wrapper around raw Redis client
@@ -21,17 +21,14 @@ var (
 	ctx           = context.Background()
 )
 
-var params = environment.Server()
-
-const PrimaryCacheDuration = 15 * time.Minute
-const SecondaryCacheDuration = 60 * time.Hour
+var env = environment.Server()
 
 // InitializeStore is initializing the store service and return a store pointer
 func InitializeStore() (*RedisService, *RedisService) {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     params.RedisHost,
-		Password: params.RedisPass, // no password set
-		DB:       params.RedisDb,   // use default DB
+		Addr:     env.RedisHost,
+		Password: env.RedisPass, // no password set
+		DB:       env.RedisDb,   // use default DB
 	})
 
 	pong, err := rdb.Ping(ctx).Result()
@@ -40,9 +37,9 @@ func InitializeStore() (*RedisService, *RedisService) {
 	}
 
 	rdb2 := redis.NewClient(&redis.Options{
-		Addr:     params.RedisHost,
-		Password: params.RedisPass, // no password set
-		DB:       params.RedisDb2,  // use default DB
+		Addr:     env.RedisHost,
+		Password: env.RedisPass, // no password set
+		DB:       env.RedisDb2,  // use default DB
 	})
 
 	_, err2 := rdb2.Ping(ctx).Result()
@@ -69,7 +66,7 @@ func GetToken(token string) string {
 }
 
 func SaveToken(token, username string) {
-	err := storeService1.redisClient.Set(ctx, token, username, PrimaryCacheDuration).Err()
+	err := storeService1.redisClient.Set(ctx, token, username, common.PrimaryCacheDuration()).Err()
 	if err != nil {
 		log.Println(fmt.Sprintf("Failed SaveToken | Error: %v - token: %s - username: %s\n",
 			err, token, username))
@@ -85,7 +82,7 @@ func DeleteToken(token string) {
 }
 
 func SaveRefreshToken(refreshToken, username string) {
-	err := storeService2.redisClient.Set(ctx, refreshToken, username, SecondaryCacheDuration).Err()
+	err := storeService2.redisClient.Set(ctx, refreshToken, username, common.SecondaryCacheDuration()).Err()
 	if err != nil {
 		log.Println(fmt.Sprintf("Failed SaveRefreshToken | Error: %v - token: %s - username: %s\n",
 			err, refreshToken, username))

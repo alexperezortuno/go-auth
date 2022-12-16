@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"github.com/alexperezortuno/go-auth/common"
 	"github.com/alexperezortuno/go-auth/internal/platform/storage/auth"
+	"github.com/alexperezortuno/go-auth/internal/platform/storage/user"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -53,24 +55,48 @@ func CreateUserHandler() gin.HandlerFunc {
 	}
 }
 
+func GetUserHandler() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var req auth.UserNameRequest
+
+		if err := ctx.BindJSON(&req); err != nil {
+			log.Printf("[ERROR] %s", err.Error())
+			common.BadRequest(ctx, "username is required")
+			return
+		}
+
+		u, err := auth.GetUser(req)
+		if err != "" {
+			common.Unauthorized(ctx, err)
+			return
+		}
+
+		var res = user.Response{
+			ID:       u.ID,
+			IdCard:   u.IdCard,
+			FullName: u.FullName,
+			Name:     u.Name,
+			Nickname: u.Nickname,
+			LastName: u.LastName,
+			Email:    u.Email,
+		}
+
+		common.SuccessResponse(ctx, res)
+	}
+}
+
 func ValidateTokenHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var header = ctx.GetHeader("Authorization")
 
 		if header == "" {
-			ctx.JSON(http.StatusUnauthorized, gin.H{
-				"status":  false,
-				"message": "credentials is required",
-			})
+			common.Unauthorized(ctx, "credentials is required")
 			return
 		}
 
 		response, err := auth.ValidateToken(header)
 		if err != "" {
-			ctx.JSON(http.StatusUnauthorized, gin.H{
-				"status":  false,
-				"message": response.Message,
-			})
+			common.Unauthorized(ctx, response.Message)
 			return
 		}
 
@@ -84,19 +110,16 @@ func RefreshTokenHandler() gin.HandlerFunc {
 
 		if err := ctx.BindJSON(&req); err != nil {
 			log.Printf("[ERROR] %s", err.Error())
-			ctx.JSON(http.StatusBadRequest, err)
+			common.BadRequest(ctx, err.Error())
 			return
 		}
 
 		response, err := auth.RefreshToken(req.Token)
 		if err != "" {
-			ctx.JSON(http.StatusUnauthorized, gin.H{
-				"status":  false,
-				"message": err,
-			})
+			common.Unauthorized(ctx, err)
 			return
 		}
 
-		ctx.JSON(http.StatusOK, response)
+		common.SuccessResponse(ctx, response)
 	}
 }

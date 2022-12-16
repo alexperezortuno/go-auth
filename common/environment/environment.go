@@ -81,7 +81,7 @@ func Server() ServerValues {
 	dbTimeZone := getEnv("DB_TIME_ZONE", "America/Santiago")
 	engineSql := getEnv("DB_DRIVER", "postgres")
 	tokenLifeTime := getEnvInt("TOKEN_LIFE_TIME", 15)
-	refreshTokenLifeTime := getEnvInt("REFRESH_TOKEN_LIFE_TIME", 30)
+	refreshTokenLifeTime := getEnvInt("REFRESH_TOKEN_LIFE_TIME", 1)
 
 	if err != nil {
 		redisDb = 0

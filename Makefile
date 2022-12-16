@@ -11,8 +11,8 @@ default: build
 clean:
 	rm -rf ./build
 
-.PHONY: start
-start:
+.PHONY: run
+run:
 	CGO_ENABLED=0 \
 	go run cmd/api/main.go
 
