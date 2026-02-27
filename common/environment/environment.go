@@ -34,27 +34,46 @@ type ServerValues struct {
 }
 
 func env() {
-	env := os.Getenv("APP_ENV")
+	environ := getEnvStr("APP_ENV", "prod")
 
-	if env == "" || env == "release" {
+	switch environ {
+	case "dev":
+		gin.SetMode(gin.DebugMode)
+		break
+	case "test":
+		gin.SetMode(gin.TestMode)
+		break
+	case "prod":
 		gin.SetMode(gin.ReleaseMode)
+		break
+	default:
+		log.Fatalf("Invalid environment: %s", environ)
 	}
 }
 
-func getEnv(envName, valueDefault string) string {
-	value := os.Getenv(envName)
-	if value == "" {
-		return valueDefault
+func getEnvStr(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
 	}
-	return value
+	return fallback
 }
 
-func getEnvInt(envName string, valueDefault int) int {
-	value, err := strconv.Atoi(envName)
-	if err != nil {
-		return valueDefault
+func getEnvInt(key string, fallback int) int {
+	if value, ok := os.LookupEnv(key); ok {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
 	}
-	return value
+	return fallback
+}
+
+func getEnvBool(key string, fallback bool) bool {
+	if value, ok := os.LookupEnv(key); ok {
+		if boolValue, err := strconv.ParseBool(value); err == nil {
+			return boolValue
+		}
+	}
+	return fallback
 }
 
 func Server() ServerValues {
@@ -64,52 +83,24 @@ func Server() ServerValues {
 		port = 8082
 	}
 
-	protocol := os.Getenv("APP_PROTOCOL")
-	host := os.Getenv("APP_HOST")
-	timeZone := os.Getenv("APP_TIME_ZONE")
-	context := os.Getenv("APP_CONTEXT")
-	redisHost := getEnv("REDIS_HOST", "")
-	redisPass := getEnv("REDIS_PASS", "")
+	protocol := getEnvStr("APP_PROTOCOL", "http")
+	host := getEnvStr("APP_HOST", "localhost")
+	timeZone := getEnvStr("APP_TIME_ZONE", "UTC")
+	context := getEnvStr("APP_CONTEXT", "auth")
+	redisHost := getEnvStr("REDIS_HOST", "")
+	redisPass := getEnvStr("REDIS_PASS", "")
 	redisDb := getEnvInt("REDIS_DB", 0)
 	redisDb2 := getEnvInt("REDIS_DB_SECONDARY", 1)
-	redisPort := getEnvInt("REDIS_DB", 0)
-	dbHost := getEnv("DB_HOST", "db-postgresql")
-	dbUser := getEnv("DB_USER", "postgres")
-	dbPass := getEnv("DB_PASS", "Me.123")
-	dbPort := getEnv("DB_PORT", "5432")
-	dbName := getEnv("DB_NAME", "authdb")
-	dbTimeZone := getEnv("DB_TIME_ZONE", "America/Santiago")
-	engineSql := getEnv("DB_DRIVER", "postgres")
+	redisPort := getEnvInt("REDIS_PORT", 0)
+	dbHost := getEnvStr("DB_HOST", "db-postgresql")
+	dbUser := getEnvStr("DB_USER", "postgres")
+	dbPass := getEnvStr("DB_PASS", "Me.123")
+	dbPort := getEnvStr("DB_PORT", "5432")
+	dbName := getEnvStr("DB_NAME", "authdb")
+	dbTimeZone := getEnvStr("DB_TIME_ZONE", "UTC")
+	engineSql := getEnvStr("DB_DRIVER", "postgres")
 	tokenLifeTime := getEnvInt("TOKEN_LIFE_TIME", 15)
 	refreshTokenLifeTime := getEnvInt("REFRESH_TOKEN_LIFE_TIME", 1)
-
-	if err != nil {
-		redisDb = 0
-	}
-
-	if protocol == "" {
-		protocol = "http"
-	}
-
-	if host == "" {
-		host = "localhost"
-	}
-
-	if context == "" {
-		context = "auth"
-	}
-
-	if timeZone == "" {
-		timeZone = "America/Santiago"
-	}
-
-	if redisPort == 0 {
-		redisPort = 6379
-	}
-
-	if redisHost == "" {
-		redisHost = fmt.Sprintf("redis:%d", redisPort)
-	}
 
 	log.Println(fmt.Printf("Redis host: %s, Redis pass: %s, Redis db: %s", redisHost, redisPass, redisDb))
 

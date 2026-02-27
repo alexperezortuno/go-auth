@@ -83,14 +83,14 @@ func (s *Server) registerRoutes(context string) {
 	{
 		unauthorized.GET(fmt.Sprintf("%s/%s", context, "/health"), health.CheckHandler())
 		unauthorized.POST(fmt.Sprintf("%s/%s", context, "/login"), auth.LoginHandler())
-		unauthorized.POST(fmt.Sprintf("%s/%s", context, "/refresh"), auth.RefreshTokenHandler())
 	}
 
 	authorized.Use(authorization.Middleware())
 	{
+		authorized.POST(fmt.Sprintf("%s/%s", context, "/renew"), auth.RefreshTokenHandler())
 		authorized.GET(fmt.Sprintf("%s/%s", context, "/info"), auth.GetUserHandler())
 		authorized.POST(fmt.Sprintf("%s/%s", context, "/create"), auth.CreateUserHandler())
-		authorized.POST(fmt.Sprintf("/%s/%s", context, "/verify"), auth.ValidateTokenHandler())
+		authorized.POST(fmt.Sprintf("/%s/%s", context, "/validate"), auth.ValidateTokenHandler())
 	}
 }
 
