@@ -1,6 +1,6 @@
 module github.com/alexperezortuno/go-auth
 
-go 1.24
+go 1.26
 
 require (
 	github.com/badoux/checkmail v1.2.4
