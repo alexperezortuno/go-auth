@@ -47,7 +47,7 @@ func env() {
 		gin.SetMode(gin.ReleaseMode)
 		break
 	default:
-		log.Fatalf("Invalid environment: %s", environ)
+		log.Fatalf("invalid environment: %s", environ)
 	}
 }
 

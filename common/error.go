@@ -8,18 +8,18 @@ import (
 func FormatError(err string) error {
 
 	if strings.Contains(err, "nickname") {
-		return errors.New("Nickname Already Taken")
+		return errors.New("nickname Already Taken")
 	}
 
 	if strings.Contains(err, "email") {
-		return errors.New("UserName Already Taken")
+		return errors.New("userName Already Taken")
 	}
 
 	if strings.Contains(err, "title") {
-		return errors.New("Title Already Taken")
+		return errors.New("title Already Taken")
 	}
 	if strings.Contains(err, "hashedPassword") {
-		return errors.New("Incorrect Password")
+		return errors.New("incorrect Password")
 	}
-	return errors.New("Incorrect Details")
+	return errors.New("incorrect Details")
 }
