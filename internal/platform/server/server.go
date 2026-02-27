@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/alexperezortuno/go-auth/common/environment"
 	"github.com/alexperezortuno/go-auth/internal/platform/server/handler/auth"
@@ -52,7 +53,7 @@ func (s *Server) Run(ctx context.Context, params environment.ServerValues) error
 	data_base.Migrate()
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal("server shut down", err)
 		}
 	}()
