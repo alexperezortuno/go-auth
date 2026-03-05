@@ -9,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"log"
 	"strings"
+	"time"
 )
 
 var JWT_TOKEN_SECRET = "ZHTU3oHo6XButkt89ZkJRVUKcWPXDzbLU5UaGA3xYPpY6ASB873GXRJgXQp3pWTATNbNHtufS22xdLYrKf4NqCy5nNaKRryd"
@@ -32,13 +33,15 @@ type AuthRequest struct {
 }
 
 type UserRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	FullName string `json:"full_name"`
-	Name     string `json:"name"`
-	LastName string `json:"last_name"`
-	Nickname string `json:"nickname"`
-	IdCard   string `json:"id_card"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	FullName  string `json:"full_name"`
+	Name      string `json:"name"`
+	LastName  string `json:"last_name"`
+	Nickname  string `json:"nickname"`
+	IdCard    string `json:"id_card"`
+	CreatedAt string `json:"created_at" default:"CURRENT_TIMESTAMP"`
+	UpdatedAt string `json:"updated_at" default:"CURRENT_TIMESTAMP"`
 }
 
 type UserNameRequest struct {
@@ -60,10 +63,6 @@ func ValidateUser(ar AuthRequest) (TokenResponse, string) {
 
 	if err != nil {
 		log.Printf("[ERROR] %s", err.Error())
-		return TokenResponse{}, err.Error()
-	}
-
-	if err != nil {
 		return TokenResponse{}, err.Error()
 	}
 
@@ -111,17 +110,24 @@ func ValidateUser(ar AuthRequest) (TokenResponse, string) {
 }
 
 func CreateUser(ar UserRequest) (model.User, string) {
-	user := model.User{
-		Email:    ar.Email,
-		Password: ar.Password,
-		FullName: ar.FullName,
-		Name:     ar.Name,
-		LastName: ar.LastName,
-		Nickname: ar.Nickname,
-		IdCard:   ar.IdCard,
+	createdAt, err := time.Parse(time.UnixDate, "Wed Feb 25 11:06:39 PST 2015")
+	if err != nil {
+		log.Printf("[ERROR] %s", err.Error())
 	}
 
-	_, err := user.SaveUser(data_base.Connection)
+	user := model.User{
+		Email:     ar.Email,
+		Password:  ar.Password,
+		FullName:  ar.FullName,
+		Name:      ar.Name,
+		LastName:  ar.LastName,
+		Nickname:  ar.Nickname,
+		IdCard:    ar.IdCard,
+		CreatedAt: createdAt,
+		UpdatedAt: createdAt,
+	}
+
+	_, err = user.SaveUser(data_base.Connection)
 
 	if err != nil {
 		log.Printf("[ERROR] %s", err.Error())
