@@ -26,6 +26,7 @@ type ServerValues struct {
 	DbHost               string
 	DbPort               string
 	DbName               string
+	DbMigrate            bool
 	DbTimeout            time.Duration
 	DbTimeZone           string
 	EngineSql            string
@@ -80,7 +81,7 @@ func Server() ServerValues {
 	env()
 	port, err := strconv.Atoi(os.Getenv("APP_PORT"))
 	if err != nil {
-		port = 8082
+		port = 8080
 	}
 
 	protocol := getEnvStr("APP_PROTOCOL", "http")
@@ -97,6 +98,7 @@ func Server() ServerValues {
 	dbPass := getEnvStr("DB_PASS", "Me.123")
 	dbPort := getEnvStr("DB_PORT", "5432")
 	dbName := getEnvStr("DB_NAME", "authdb")
+	dbMigrate := getEnvBool("DB_MIGRATE", false)
 	dbTimeZone := getEnvStr("DB_TIME_ZONE", "UTC")
 	engineSql := getEnvStr("DB_DRIVER", "postgres")
 	tokenLifeTime := getEnvInt("TOKEN_LIFE_TIME", 15)
@@ -121,6 +123,7 @@ func Server() ServerValues {
 		DbUser:               dbUser,
 		DbPass:               dbPass,
 		DbName:               dbName,
+		DbMigrate:            dbMigrate,
 		DbTimeZone:           dbTimeZone,
 		EngineSql:            engineSql,
 		TokenLifeTime:        tokenLifeTime,
