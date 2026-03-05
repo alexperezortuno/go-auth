@@ -1,7 +1,8 @@
 # go-auth
 
-## Sync dependencies
 
+## Sync dependencies
+     
 ```bash
 go mod tidy
 ```
