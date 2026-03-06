@@ -26,6 +26,7 @@ type ServerValues struct {
 	DbHost               string
 	DbPort               string
 	DbName               string
+	DbSchema             string
 	DbMigrate            bool
 	DbTimeout            time.Duration
 	DbTimeZone           string
@@ -98,6 +99,7 @@ func Server() ServerValues {
 	dbPass := getEnvStr("DB_PASS", "Me.123")
 	dbPort := getEnvStr("DB_PORT", "5432")
 	dbName := getEnvStr("DB_NAME", "authdb")
+	dbSchema := getEnvStr("DB_SCHEMA", "public")
 	dbMigrate := getEnvBool("DB_MIGRATE", false)
 	dbTimeZone := getEnvStr("DB_TIME_ZONE", "UTC")
 	engineSql := getEnvStr("DB_DRIVER", "postgres")
@@ -123,6 +125,7 @@ func Server() ServerValues {
 		DbUser:               dbUser,
 		DbPass:               dbPass,
 		DbName:               dbName,
+		DbSchema:             dbSchema,
 		DbMigrate:            dbMigrate,
 		DbTimeZone:           dbTimeZone,
 		EngineSql:            engineSql,
