@@ -19,5 +19,4 @@ pkg/
 src/
 go.sum
 dist/*
-dist/hash_password
 .env

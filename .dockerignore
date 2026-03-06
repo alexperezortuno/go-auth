@@ -1,0 +1,10 @@
+.git
+.idea
+dist
+tmp
+vendor
+.env
+*.log
+Dockerfile
+docker-compose.yml
+README.md
