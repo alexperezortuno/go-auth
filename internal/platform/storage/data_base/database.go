@@ -49,7 +49,8 @@ func StrConn(params environment.ServerValues) string {
 			" dbname=" + params.DbName +
 			" password=" + params.DbPass +
 			" sslmode=disable" +
-			" TimeZone=" + params.DbTimeZone
+			" TimeZone=" + params.DbTimeZone +
+			" search_path=" + params.DbSchema
 	}
 
 	return ""
