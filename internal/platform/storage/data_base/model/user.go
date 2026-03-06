@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/badoux/checkmail"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -13,7 +14,7 @@ import (
 )
 
 type User struct {
-	ID        uint32    `gorm:"primary_key;auto_increment" json:"id"`
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
 	FullName  string    `gorm:"size:255;null;" json:"full_name"`
 	Name      string    `gorm:"size:100;not null;" json:"name"`
 	LastName  string    `gorm:"size:100;not null;" json:"last_name"`
@@ -55,7 +56,7 @@ func (u *User) BeforeSave() error {
 }
 
 func (u *User) Prepare() {
-	u.ID = 0
+	u.ID = uuid.New()
 	u.IdCard = html.EscapeString(strings.TrimSpace(u.IdCard))
 	u.Name = html.EscapeString(strings.TrimSpace(u.Name))
 	u.LastName = html.EscapeString(strings.TrimSpace(u.LastName))
