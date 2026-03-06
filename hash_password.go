@@ -8,7 +8,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Uso: go run hash_password.go <password>")
+		fmt.Println("Use: go run hash_password.go <password>")
 		return
 	}
 	password := os.Args[1]
