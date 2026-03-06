@@ -50,7 +50,10 @@ func (s *Server) Run(ctx context.Context, params environment.ServerValues) error
 	redis.InitializeStore()
 	data_base.Init(params)
 	defer data_base.CloseConnection()
-	data_base.Migrate()
+
+	if environment.Server().DbMigrate {
+		data_base.Migrate()
+	}
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
