@@ -170,9 +170,9 @@ func ValidateToken(tr string) (ValidationResponse, string) {
 
 	if _, ok := token.Claims.(*CustomClaim); ok && token.Valid {
 		return ValidationResponse{Message: "valid", Status: true}, ""
-	} else {
-		return ValidationResponse{Message: "invalid token", Status: false}, "invalid token"
 	}
+
+	return ValidationResponse{Message: "invalid token", Status: false}, "invalid token"
 }
 
 func RefreshToken(tr string) (TokenResponse, string) {

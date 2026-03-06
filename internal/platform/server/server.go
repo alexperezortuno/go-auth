@@ -96,6 +96,24 @@ func (s *Server) registerRoutes(context string) {
 		authorized.POST(fmt.Sprintf("%s/%s", context, "/create"), auth.CreateUserHandler())
 		authorized.POST(fmt.Sprintf("/%s/%s", context, "/validate"), auth.ValidateTokenHandler())
 	}
+
+	s.engine.NoRoute(func(ctx *gin.Context) {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"status":  false,
+			"message": "route not found",
+			"path":    ctx.Request.URL.Path,
+			"method":  ctx.Request.Method,
+		})
+	})
+
+	s.engine.NoMethod(func(ctx *gin.Context) {
+		ctx.JSON(http.StatusMethodNotAllowed, gin.H{
+			"status":  false,
+			"message": "method not allowed",
+			"path":    ctx.Request.URL.Path,
+			"method":  ctx.Request.Method,
+		})
+	})
 }
 
 func serverContext(ctx context.Context) context.Context {
